@@ -1,0 +1,11 @@
+package com.arcticblu.tradeoptimizer.reposiory;
+
+import com.arcticblu.tradeoptimizer.entity.OptimizationRunEntity;
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.stereotype.Repository;
+
+import java.util.UUID;
+
+@Repository
+public interface OptimizationRunRepository extends JpaRepository<OptimizationRunEntity, UUID> {
+}
