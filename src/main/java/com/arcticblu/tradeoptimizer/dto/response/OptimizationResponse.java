@@ -1,7 +1,5 @@
 package com.arcticblu.tradeoptimizer.dto.response;
 
-import jakarta.validation.constraints.Positive;
-
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.List;
