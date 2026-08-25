@@ -8,6 +8,7 @@ import java.util.UUID;
 public record OptimizationResponse(
         UUID requestId,
         List<TradeResponse> selectedTrades,
+        BigDecimal totalExpectedPnl,
         BigDecimal totalMarginRequired,
         Instant createdAt
 ) {
