@@ -42,4 +42,9 @@ public class OptimizationRunEntity {
     )
     private List<TradeEntity> trades = new ArrayList<>();
 
+    public void addTrade(TradeEntity trade) {
+        trades.add(trade);
+        trade.setOptimizationRun(this);
+    }
+
 }
