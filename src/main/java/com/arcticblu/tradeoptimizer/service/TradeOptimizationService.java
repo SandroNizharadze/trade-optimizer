@@ -8,7 +8,7 @@ import com.arcticblu.tradeoptimizer.dto.response.OptimizationResponse;
 import com.arcticblu.tradeoptimizer.dto.response.TradeResponse;
 import com.arcticblu.tradeoptimizer.entity.OptimizationRunEntity;
 import com.arcticblu.tradeoptimizer.entity.TradeEntity;
-import com.arcticblu.tradeoptimizer.reposiory.OptimizationRunRepository;
+import com.arcticblu.tradeoptimizer.repository.OptimizationRunRepository;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
