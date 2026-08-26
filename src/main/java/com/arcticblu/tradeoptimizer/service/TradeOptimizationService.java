@@ -8,6 +8,7 @@ import com.arcticblu.tradeoptimizer.dto.response.OptimizationResponse;
 import com.arcticblu.tradeoptimizer.dto.response.TradeResponse;
 import com.arcticblu.tradeoptimizer.entity.OptimizationRunEntity;
 import com.arcticblu.tradeoptimizer.entity.TradeEntity;
+import com.arcticblu.tradeoptimizer.exception.OptimizationRunNotFoundException;
 import com.arcticblu.tradeoptimizer.repository.OptimizationRunRepository;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -80,7 +81,32 @@ public class TradeOptimizationService {
                 saved.getTotalExpectedPnl(),
                 saved.getCreatedAt()
         );
+    }
 
+    public OptimizationResponse getByRequestId(UUID requestId) {
+        OptimizationRunEntity run = optimizationRunRepository
+                .findById(requestId)
+                .orElseThrow(() ->
+                        new OptimizationRunNotFoundException(requestId)
+                );
+
+        List<TradeResponse> selectedTrades = run.getTrades()
+                .stream()
+                .filter(TradeEntity::isSelected)
+                .map(trade -> new TradeResponse(
+                        trade.getTradeName(),
+                        trade.getMarginRequired(),
+                        trade.getExpectedPnl()
+                ))
+                .toList();
+
+        return new OptimizationResponse(
+                run.getRequestId(),
+                selectedTrades,
+                run.getTotalMarginRequired(),
+                run.getTotalExpectedPnl(),
+                run.getCreatedAt()
+        );
     }
 
 }
