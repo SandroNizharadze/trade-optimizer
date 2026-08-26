@@ -17,8 +17,7 @@ import java.util.List;
 import java.util.UUID;
 
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -98,5 +97,32 @@ class TradeOptimizationControllerTest {
 
         verify(tradeOptimizationService)
                 .optimize(any(OptimizeTradesRequest.class));
+    }
+
+    @Test
+    void shouldReturnDescriptiveBadRequestForNegativeMaxMargin()
+            throws Exception {
+
+        mockMvc.perform(
+                        post("/api/v1/trades/optimize")
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content("""
+                                    {
+                                      "maxMargin": -1,
+                                      "candidateTrades": []
+                                    }
+                                    """)
+                )
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.status").value(400))
+                .andExpect(jsonPath("$.error").value("Bad Request"))
+                .andExpect(jsonPath("$.message")
+                        .value("Request validation failed"))
+                .andExpect(jsonPath("$.path")
+                        .value("/api/v1/trades/optimize"))
+                .andExpect(jsonPath("$.validationErrors.maxMargin")
+                        .exists());
+
+        verifyNoInteractions(tradeOptimizationService);
     }
 }
