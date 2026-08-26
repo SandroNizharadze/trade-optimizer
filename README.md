@@ -62,7 +62,7 @@ curl -X POST http://localhost:8080/api/v1/trades/optimize \
       {"tradeName":"Trade Gamma","marginRequired":3,"expectedPnl":80},
       {"tradeName":"Trade Delta","marginRequired":8,"expectedPnl":160}
     ]
-  }'
+  }' | jq
 ```
 
 Successful optimization returns `201 Created`. If no trade fits, an empty selection with totals of zero is returned with `200 OK`.
@@ -70,7 +70,7 @@ Successful optimization returns `201 Created`. If no trade fits, an empty select
 ### Get optimization
 
 ```bash
-curl http://localhost:8080/api/v1/trades/{requestId}
+curl http://localhost:8080/api/v1/trades/{requestId} | jq
 ```
 
 Returns `404` when the request ID does not exist.
@@ -78,7 +78,7 @@ Returns `404` when the request ID does not exist.
 ### Audit history
 
 ```bash
-curl "http://localhost:8080/api/v1/trades?page=0&size=20"
+curl "http://localhost:8080/api/v1/trades?page=0&size=20" | jq
 ```
 
 Runs are returned newest first.
