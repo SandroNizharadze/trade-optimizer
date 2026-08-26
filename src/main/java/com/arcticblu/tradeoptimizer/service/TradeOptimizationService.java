@@ -7,7 +7,9 @@ import com.arcticblu.tradeoptimizer.dto.request.OptimizeTradesRequest;
 import com.arcticblu.tradeoptimizer.dto.response.OptimizationResponse;
 import com.arcticblu.tradeoptimizer.dto.response.TradeResponse;
 import com.arcticblu.tradeoptimizer.entity.OptimizationRunEntity;
-import com.arcticblu.tradeoptimizer.reposiory.OptimizationRunRepository;
+import com.arcticblu.tradeoptimizer.entity.TradeEntity;
+import com.arcticblu.tradeoptimizer.repository.OptimizationRunRepository;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -17,12 +19,13 @@ import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
-public class tradeOptimizationService {
+public class TradeOptimizationService {
 
     private final TradeOptimizer tradeOptimizer;
     private final OptimizationRunRepository optimizationRunRepository;
 
 
+    @Transactional
     public OptimizationResponse optimize(OptimizeTradesRequest request) {
         List<TradeCandidate> candidates = request.candidateTrades().stream()
                 .map(trade -> new TradeCandidate(
@@ -44,6 +47,21 @@ public class tradeOptimizationService {
         run.setTotalExpectedPnl(result.totalExpectedPnl());
         run.setTotalMarginRequired(result.totalMarginRequired());
         run.setCreatedAt(Instant.now());
+
+        for (TradeCandidate candidate : candidates) {
+            TradeEntity tradeEntity = new TradeEntity();
+
+            tradeEntity.setId(UUID.randomUUID());
+            tradeEntity.setTradeName(candidate.tradeName());
+            tradeEntity.setMarginRequired(candidate.marginRequired());
+            tradeEntity.setExpectedPnl(candidate.expectedPnl());
+
+            boolean selected = result.selectedTrades().contains(candidate);
+
+            tradeEntity.setSelected(selected);
+
+            run.addTrade(tradeEntity);
+        }
 
         OptimizationRunEntity saved = optimizationRunRepository.save(run);
 

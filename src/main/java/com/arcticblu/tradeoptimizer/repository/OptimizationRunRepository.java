@@ -1,4 +1,4 @@
-package com.arcticblu.tradeoptimizer.reposiory;
+package com.arcticblu.tradeoptimizer.repository;
 
 import com.arcticblu.tradeoptimizer.entity.OptimizationRunEntity;
 import org.springframework.data.jpa.repository.JpaRepository;
