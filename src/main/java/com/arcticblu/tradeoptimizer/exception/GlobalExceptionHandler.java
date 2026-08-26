@@ -82,6 +82,21 @@ public class GlobalExceptionHandler {
         return ResponseEntity.badRequest().body(response);
     }
 
+    @ExceptionHandler(OptimizationRunNotFoundException.class)
+    public ResponseEntity<ApiErrorResponse> handleNotFound(
+            OptimizationRunNotFoundException exception,
+            HttpServletRequest request
+    ) {
+        ApiErrorResponse response = createResponse(
+                HttpStatus.NOT_FOUND,
+                exception.getMessage(),
+                request.getRequestURI(),
+                Map.of()
+        );
+
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
+    }
+
     private ApiErrorResponse createResponse(
             HttpStatus status,
             String message,
