@@ -10,7 +10,9 @@ import com.arcticblu.tradeoptimizer.entity.OptimizationRunEntity;
 import com.arcticblu.tradeoptimizer.entity.TradeEntity;
 import com.arcticblu.tradeoptimizer.exception.OptimizationRunNotFoundException;
 import com.arcticblu.tradeoptimizer.repository.OptimizationRunRepository;
-import jakarta.transaction.Transactional;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -83,6 +85,7 @@ public class TradeOptimizationService {
         );
     }
 
+    @Transactional(readOnly = true)
     public OptimizationResponse getByRequestId(UUID requestId) {
         OptimizationRunEntity run = optimizationRunRepository
                 .findById(requestId)
@@ -90,6 +93,19 @@ public class TradeOptimizationService {
                         new OptimizationRunNotFoundException(requestId)
                 );
 
+        return toResponse(run);
+    }
+
+    @Transactional(readOnly = true)
+    public Page<OptimizationResponse> getAll(Pageable pageable) {
+        return optimizationRunRepository
+                .findAllByOrderByCreatedAtDesc(pageable)
+                .map(this::toResponse);
+    }
+
+    private OptimizationResponse toResponse(
+            OptimizationRunEntity run
+    ) {
         List<TradeResponse> selectedTrades = run.getTrades()
                 .stream()
                 .filter(TradeEntity::isSelected)
