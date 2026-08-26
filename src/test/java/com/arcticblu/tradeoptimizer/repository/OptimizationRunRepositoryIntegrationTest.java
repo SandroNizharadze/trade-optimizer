@@ -2,7 +2,6 @@ package com.arcticblu.tradeoptimizer.repository;
 
 import com.arcticblu.tradeoptimizer.entity.OptimizationRunEntity;
 import com.arcticblu.tradeoptimizer.entity.TradeEntity;
-import com.arcticblu.tradeoptimizer.reposiory.OptimizationRunRepository;
 import jakarta.persistence.EntityManager;
 import jakarta.transaction.Transactional;
 import org.junit.jupiter.api.Test;
