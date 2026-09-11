@@ -55,12 +55,10 @@ The API runs on `http://localhost:8080`.
 curl -X POST http://localhost:8080/api/v1/trades/optimize \
   -H "Content-Type: application/json" \
   -d '{
-    "maxMargin": 15,
+    "maxMargin": 20,
     "candidateTrades": [
       {"tradeName":"Trade Alpha","marginRequired":5,"expectedPnl":120},
-      {"tradeName":"Trade Beta","marginRequired":10,"expectedPnl":200},
-      {"tradeName":"Trade Gamma","marginRequired":3,"expectedPnl":80},
-      {"tradeName":"Trade Delta","marginRequired":8,"expectedPnl":160}
+      {"tradeName":"Trade Beta","marginRequired":10,"expectedPnl":200}
     ]
   }' | jq
 ```
@@ -69,7 +67,7 @@ Successful optimization returns `201 Created`. If no trade fits, an empty select
 
 ### Get optimization
 
-```bash
+```bash[TradeOptimizationService.java](src/main/java/com/arcticblu/tradeoptimizer/service/TradeOptimizationService.java)
 curl http://localhost:8080/api/v1/trades/{requestId} | jq
 ```
 
@@ -83,3 +81,14 @@ curl "http://localhost:8080/api/v1/trades?page=0&size=20" | jq
 
 Runs are returned newest first.
 ce behavior. Controller tests cover HTTP validation/status codes. A Testcontainers integration test verifies the full POST → PostgreSQL → GET flow using a real PostgreSQL instance.
+
+
+
+case1:
+
+maxMargin: 15
+
+trade 1: margin required: 10
+
+
+

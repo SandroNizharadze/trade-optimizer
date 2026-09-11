@@ -10,13 +10,16 @@ import com.arcticblu.tradeoptimizer.entity.OptimizationRunEntity;
 import com.arcticblu.tradeoptimizer.entity.TradeEntity;
 import com.arcticblu.tradeoptimizer.exception.OptimizationRunNotFoundException;
 import com.arcticblu.tradeoptimizer.repository.OptimizationRunRepository;
+import com.arcticblu.tradeoptimizer.repository.TradeRepository;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.math.BigDecimal;
 import java.time.Instant;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
@@ -26,6 +29,7 @@ public class TradeOptimizationService {
 
     private final TradeOptimizer tradeOptimizer;
     private final OptimizationRunRepository optimizationRunRepository;
+    private final TradeRepository tradeRepository;
 
 
     @Transactional
@@ -38,10 +42,57 @@ public class TradeOptimizationService {
                 ))
                 .toList();
 
-        OptimizationResult result = tradeOptimizer.optimize(
+        OptimizationResult initialResult = tradeOptimizer.optimize(
                 candidates,
                 request.maxMargin()
         );
+
+        BigDecimal remainingMargin = request.maxMargin().subtract(initialResult.totalMarginRequired());
+
+        OptimizationResult result = initialResult;
+
+        if (remainingMargin.compareTo(BigDecimal.ZERO) > 0) {
+
+            List<TradeEntity> databaseTrades =
+                    tradeRepository
+                            .findBySelectedFalseAndMarginRequiredLessThanEqual(
+                                    remainingMargin
+                            );
+
+            List<TradeCandidate> databaseCandidates =
+                    databaseTrades.stream()
+                            .map(trade -> new TradeCandidate(
+                                    trade.getTradeName(),
+                                    trade.getMarginRequired(),
+                                    trade.getExpectedPnl()
+                            ))
+                            .toList();
+
+            OptimizationResult databaseResult =
+                    tradeOptimizer.optimize(
+                            databaseCandidates,
+                            remainingMargin
+                    );
+
+            for (TradeEntity databaseTrade : databaseTrades) {
+
+                TradeCandidate candidate = new TradeCandidate(
+                        databaseTrade.getTradeName(),
+                        databaseTrade.getMarginRequired(),
+                        databaseTrade.getExpectedPnl()
+                );
+
+                if (databaseResult.selectedTrades().contains(candidate)) {
+                    databaseTrade.setSelected(true);
+                }
+            }
+
+            result = combineResults(
+                    initialResult,
+                    databaseResult
+            );
+        }
+
 
         OptimizationRunEntity run = new OptimizationRunEntity();
 
@@ -83,6 +134,20 @@ public class TradeOptimizationService {
                 saved.getTotalExpectedPnl(),
                 saved.getCreatedAt()
         );
+    }
+
+    private OptimizationResult combineResults(OptimizationResult initialResult, OptimizationResult databaseResult) {
+
+        List<TradeCandidate> selected = new ArrayList<>(initialResult.selectedTrades());
+
+        selected.addAll(databaseResult.selectedTrades());
+
+        return new OptimizationResult(
+                selected,
+                initialResult.totalMarginRequired().add(databaseResult.totalMarginRequired()),
+                initialResult.totalExpectedPnl().add(databaseResult.totalExpectedPnl())
+        );
+
     }
 
     @Transactional(readOnly = true)
